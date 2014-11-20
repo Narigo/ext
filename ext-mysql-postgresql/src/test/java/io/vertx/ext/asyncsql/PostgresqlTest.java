@@ -6,12 +6,15 @@ import org.junit.Test;
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>.
  */
-class PostgresqlTest extends VertxTestBase {
+public class PostgresqlTest extends VertxTestBase {
+
+  public PostgresqlTest() {
+
+  }
 
   @Test
   public void someTest() throws Exception {
     assertEquals("one should be one", 1, 1);
-    assertEquals("one should be two", 1, 2);
   }
 
 }

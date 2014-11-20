@@ -28,6 +28,7 @@
     <module>ext-mongo-embedded-db</module>
     <module>ext-metrics</module>
     <module>ext-rx</module>
+    <module>ext-mysql-postgresql</module>
   </modules>
 
   <parent>

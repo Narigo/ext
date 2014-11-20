@@ -11,7 +11,7 @@ import io.vertx.proxygen.ProxyHelper;
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>
  */
-@VertxGen(concrete = false)
+@VertxGen
 @ProxyGen
 public interface MysqlService extends BaseSqlService {
 
