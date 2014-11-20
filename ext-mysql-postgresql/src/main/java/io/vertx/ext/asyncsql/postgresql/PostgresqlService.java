@@ -11,7 +11,7 @@ import io.vertx.proxygen.ProxyHelper;
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>
  */
-@VertxGen
+@VertxGen(concrete = false)
 @ProxyGen
 public interface PostgresqlService extends BaseSqlService {
 

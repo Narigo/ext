@@ -9,9 +9,9 @@ import org.junit.Test;
 class PostgresqlTest extends VertxTestBase {
 
   @Test
-  public void someTest() throws Exception = {
-    assertEquals("one should be one", 1, 1)
-    assertEquals("one should be two", 1, 2)
+  public void someTest() throws Exception {
+    assertEquals("one should be one", 1, 1);
+    assertEquals("one should be two", 1, 2);
   }
 
 }

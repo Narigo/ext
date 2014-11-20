@@ -29,15 +29,25 @@ public class AsyncSqlServiceVerticle extends AbstractVerticle {
       ProxyHelper.registerService(PostgresqlService.class, vertx, postgresqlService, address);
 
       // Start it
-      postgresqlService.start(startFuture);
-    }
-
-    if ("mysql".equals(dbType)) {
+      postgresqlService.start(res -> {
+        if (res.failed()) {
+          startFuture.fail(res.cause());
+        } else {
+          startFuture.complete();
+        }
+      });
+    } else if ("mysql".equals(dbType)) {
       mysqlService = MysqlService.create(vertx, config());
       ProxyHelper.registerService(MysqlService.class, vertx, mysqlService, address);
 
       // Start it
-      mysqlService.start(startFuture);
+      mysqlService.start(res -> {
+        if (res.failed()) {
+          startFuture.fail(res.cause());
+        } else {
+          startFuture.complete();
+        }
+      });
     }
 
   }
@@ -45,10 +55,21 @@ public class AsyncSqlServiceVerticle extends AbstractVerticle {
   @Override
   public void stop(Future<Void> stopFuture) throws Exception {
     if (postgresqlService != null) {
-      postgresqlService.stop(stopFuture);
-    }
-    if (mysqlService != null) {
-      mysqlService.stop(stopFuture);
+      postgresqlService.stop(res -> {
+        if (res.failed()) {
+          stopFuture.fail(res.cause());
+        } else {
+          stopFuture.complete();
+        }
+      });
+    } else if (mysqlService != null) {
+      mysqlService.stop(res -> {
+        if (res.failed()) {
+          stopFuture.fail(res.cause());
+        } else {
+          stopFuture.complete();
+        }
+      });
     }
   }
 }

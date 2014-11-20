@@ -57,9 +57,9 @@ public interface BaseSqlService {
     void rawInTransaction(String transactionId, String command, Handler<AsyncResult<JsonObject>> resultHandler);
 
     @ProxyIgnore
-    void start(Future<Void> startFuture);
+    void start(Handler<AsyncResult<Void>> whenDone);
 
     @ProxyIgnore
-    void stop(Future<Void> stopFuture);
+    void stop(Handler<AsyncResult<Void>> whenDone);
 
 }

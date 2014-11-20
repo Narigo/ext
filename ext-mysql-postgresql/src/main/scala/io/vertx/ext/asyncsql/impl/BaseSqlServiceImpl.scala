@@ -71,15 +71,15 @@ abstract class BaseSqlServiceImpl(vertx: Vertx, config: JsonObject) extends Base
 
   override def rawInTransaction(transactionId: String, command: String, resultHandler: Handler[AsyncResult[JsonObject]]): Unit = ???
 
-  override def stop(stopped: JFuture[Void]): Unit = {
+  override def stop(stopped: Handler[AsyncResult[Void]]): Unit = {
     pool.close() onComplete {
-      case Success(p) => stopped.complete()
-      case Failure(ex) => stopped.fail(ex)
+      case Success(p) => stopped.handle(JFuture.completedFuture())
+      case Failure(ex) => stopped.handle(JFuture.completedFuture(ex))
     }
   }
 
-  override def start(started: JFuture[Void]): Unit = {
-    started.complete()
+  override def start(started: Handler[AsyncResult[Void]]): Unit = {
+    started.handle(JFuture.completedFuture())
   }
 
   private def getConfiguration(config: JsonObject, dbType: String) = {
