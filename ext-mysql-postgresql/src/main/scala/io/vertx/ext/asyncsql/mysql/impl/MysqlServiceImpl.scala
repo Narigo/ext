@@ -13,6 +13,8 @@ class MysqlServiceImpl(vertx: Vertx, config: JsonObject)
 
   override protected val dbType: String = "mysql"
 
+  override protected val defaultHost: String = "localhost"
+
   override protected val defaultPort: Int = 3306
 
   override protected val defaultDatabase: Option[String] = Some("testdb")

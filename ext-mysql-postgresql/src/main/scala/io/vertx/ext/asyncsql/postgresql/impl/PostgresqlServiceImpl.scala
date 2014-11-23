@@ -2,6 +2,8 @@ package io.vertx.ext.asyncsql.postgresql.impl
 
 import com.github.mauricio.async.db.Configuration
 import io.vertx.core.eventbus.Message
+import io.vertx.core.logging.Logger
+import io.vertx.core.logging.impl.LoggerFactory
 import io.vertx.core.{Handler, Vertx}
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.asyncsql.impl.BaseSqlServiceImpl
@@ -13,15 +15,16 @@ import io.vertx.ext.asyncsql.postgresql.PostgresqlService
 class PostgresqlServiceImpl(vertx: Vertx, config: JsonObject)
   extends BaseSqlServiceImpl(vertx, config) with PostgresqlService {
 
+  protected val dbType: String = "postgresql"
 
-  override protected val dbType: String = "postgresql"
+  protected val defaultHost: String = "localhost"
 
-  override protected val defaultPort: Int = 5432
+  protected val defaultPort: Int = 5432
 
-  override protected val defaultDatabase: Option[String] = Some("testdb")
+  protected val defaultDatabase: Option[String] = Some("testdb")
 
-  override protected val defaultUser: String = "vertx"
+  protected val defaultUser: String = "vertx"
 
-  override protected val defaultPassword: Option[String] = Some("test")
+  protected val defaultPassword: Option[String] = Some("test")
 
 }

@@ -29,13 +29,14 @@ trait AsyncConnectionPool {
     poolSize += 1
     create() recoverWith {
       case ex: Throwable =>
+        logger.info(s"creating a connection went wrong: $ex")
         poolSize -= 1
         Future.failed(ex)
     }
   }
 
   private def waitForAvailableConnection(): Future[Connection] = {
-    val p = Promise[Connection]
+    val p = Promise[Connection]()
     waiters.enqueue(p)
     p.future
   }
@@ -108,10 +109,12 @@ trait AsyncConnectionPool {
 }
 
 object AsyncConnectionPool {
+  private val logger: Logger = LoggerFactory.getLogger(classOf[AsyncConnectionPool])
 
   def apply(vertx: Vertx, dbType: String, maxPoolSize: Int, config: Configuration) = {
     dbType match {
       case "postgresql" =>
+        logger.info(s"creating pool with config $config")
         new PostgreSqlAsyncConnectionPool(vertx,
           config,
           vertx.getOrCreateContext.asInstanceOf[EventLoopContext].getEventLoop,
@@ -122,6 +125,7 @@ object AsyncConnectionPool {
           vertx.getOrCreateContext.asInstanceOf[EventLoopContext].getEventLoop,
           maxPoolSize)
       case x => {
+        logger.info(s"not implemented $x")
         throw new NotImplementedError
       }
     }

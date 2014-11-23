@@ -1,10 +1,13 @@
 package io.vertx.ext.asyncsql;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
+import io.vertx.core.*;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.mysql.MysqlService;
 import io.vertx.ext.asyncsql.postgresql.PostgresqlService;
 import io.vertx.proxygen.ProxyHelper;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.function.Function;
 
 /**
  * @author <a href="http://www.campudus.com/">Joern Bernhardt</a>
@@ -14,40 +17,45 @@ public class AsyncSqlServiceVerticle extends AbstractVerticle {
   PostgresqlService postgresqlService;
   MysqlService mysqlService;
 
-  @Override
-  public void start(Future<Void> startFuture) throws Exception {
-    final String dbType = config().getString("dbType");
-
-    String address = config().getString("address");
+  private <T extends BaseSqlService> T createServiceFor(JsonObject config, Class<T> cls, Function<Pair<Vertx, JsonObject>, T> createServiceFn, Handler<AsyncResult<Void>> done) {
+    final String address = config.getString("address");
     if (address == null) {
       throw new IllegalStateException("address field must be specified in config for service verticle");
     }
+    final T service = createServiceFn.apply(new Pair<>(vertx, config));
+    ProxyHelper.registerService(cls, vertx, service, address);
+    service.start(done);
+    return service;
+  }
+
+  @Override
+  public void start(Future<Void> startFuture) throws Exception {
+    final JsonObject postgresqlConfig = config().getJsonObject("postgresql");
+    final JsonObject mysqlConfig = config().getJsonObject("mysql");
+    final CountDownLatch cdl =
+      new CountDownLatch((postgresqlConfig != null ? 1 : 0) + (mysqlConfig != null ? 1 : 0));
+    final Handler<AsyncResult<Void>> simpleEndHandler = res -> {
+      cdl.countDown();
+      if (res.failed()) {
+        startFuture.fail(res.cause());
+      } else {
+        if (cdl.getCount() == 0 && !startFuture.isComplete()) {
+          startFuture.complete();
+        }
+      }
+    };
 
     // Create the service object
-    if ("postgresql".equals(dbType)) {
-      postgresqlService = PostgresqlService.create(vertx, config());
-      ProxyHelper.registerService(PostgresqlService.class, vertx, postgresqlService, address);
+    if (postgresqlConfig != null) {
+      postgresqlService = createServiceFor(postgresqlConfig, PostgresqlService.class,
+        p -> PostgresqlService.create(p.t1, p.t2),
+        simpleEndHandler);
+    }
 
-      // Start it
-      postgresqlService.start(res -> {
-        if (res.failed()) {
-          startFuture.fail(res.cause());
-        } else {
-          startFuture.complete();
-        }
-      });
-    } else if ("mysql".equals(dbType)) {
-      mysqlService = MysqlService.create(vertx, config());
-      ProxyHelper.registerService(MysqlService.class, vertx, mysqlService, address);
-
-      // Start it
-      mysqlService.start(res -> {
-        if (res.failed()) {
-          startFuture.fail(res.cause());
-        } else {
-          startFuture.complete();
-        }
-      });
+    if (mysqlConfig != null) {
+      mysqlService = createServiceFor(mysqlConfig, MysqlService.class,
+        p -> MysqlService.create(p.t1, p.t2),
+        simpleEndHandler);
     }
 
   }

@@ -8,10 +8,6 @@ import org.junit.Test;
  */
 public class PostgresqlTest extends VertxTestBase {
 
-  public PostgresqlTest() {
-
-  }
-
   @Test
   public void someTest() throws Exception {
     assertEquals("one should be one", 1, 1);
