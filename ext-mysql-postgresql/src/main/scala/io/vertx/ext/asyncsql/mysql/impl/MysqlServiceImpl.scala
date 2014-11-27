@@ -1,17 +1,24 @@
 package io.vertx.ext.asyncsql.mysql.impl
 
-import io.vertx.core.{Future, Vertx}
+import java.util.UUID
+
+import com.github.mauricio.async.db.{Configuration, Connection}
+import io.netty.channel.EventLoop
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.asyncsql.impl.BaseSqlServiceImpl
-import io.vertx.ext.asyncsql.mysql.MysqlService
+import io.vertx.ext.asyncsql.impl.BaseSqlService
+import io.vertx.ext.asyncsql.impl.pool.MysqlAsyncConnectionPool
+import io.vertx.ext.asyncsql.mysql.{MysqlService, MysqlTransaction}
+
+import scala.concurrent.{Future, Promise}
 
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>.
  */
-class MysqlServiceImpl(vertx: Vertx, config: JsonObject)
-  extends BaseSqlServiceImpl(vertx, config) with MysqlService {
+class MysqlServiceImpl(val vertx: Vertx, val config: JsonObject)
+  extends BaseSqlService[MysqlTransaction, MysqlAsyncConnectionPool] with MysqlService {
 
-  override protected val dbType: String = "mysql"
+  override protected val poolFactory = MysqlAsyncConnectionPool.apply _
 
   override protected val defaultHost: String = "localhost"
 
@@ -22,5 +29,12 @@ class MysqlServiceImpl(vertx: Vertx, config: JsonObject)
   override protected val defaultUser: String = "root"
 
   override protected val defaultPassword: Option[String] = None
+
+  override protected def createConnectionProxy(connId: String, takePromise: Promise[Connection], freeHandler: Connection => Future[_]): MysqlTransaction = {
+    val connId = UUID.randomUUID().toString
+    val address = s"$registerAddress.$connId"
+    val transaction = new MysqlTransactionImpl(vertx, classOf[MysqlTransaction], takePromise, freeHandler)
+    transaction
+  }
 
 }

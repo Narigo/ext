@@ -1,23 +1,17 @@
-package io.vertx.ext.asyncsql;
+package io.vertx.ext.asyncsql.postgresql;
 
-import com.github.mauricio.async.db.Connection;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.proxygen.ProxyHelper;
-
-import java.util.UUID;
+import io.vertx.ext.asyncsql.DatabaseCommands;
 
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>.
  */
 @VertxGen
-public interface TransactionConnection extends DatabaseCommands {
+@ProxyGen
+public interface PostgresqlTransaction extends DatabaseCommands {
 
   /**
    * Commits a transaction.

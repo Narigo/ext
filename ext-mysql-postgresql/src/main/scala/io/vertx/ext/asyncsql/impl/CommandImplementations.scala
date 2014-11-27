@@ -1,38 +1,38 @@
 package io.vertx.ext.asyncsql.impl
 
-import com.github.mauricio.async.db.{Connection, Configuration, QueryResult, RowData}
+import com.github.mauricio.async.db.{Connection, QueryResult, RowData}
 import io.vertx.core.json.{JsonArray, JsonObject}
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.impl.LoggerFactory
-import io.vertx.core.{AsyncResult, Handler, Future => JFuture}
+import io.vertx.core.{AsyncResult, Handler, Future => VFuture}
 import io.vertx.ext.asyncsql.DatabaseCommands
-import io.vertx.ext.asyncsql.impl.pool.{SimpleExecutionContext, AsyncConnectionPool}
+import io.vertx.ext.asyncsql.impl.pool.SimpleExecutionContext
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * @author <a href="http://www.campudus.com">Joern Bernhardt</a>.
  */
 trait CommandImplementations extends DatabaseCommands {
   private val logger: Logger = LoggerFactory.getLogger(super.getClass)
-
   private implicit val executionContext: ExecutionContext = SimpleExecutionContext(logger)
 
-  protected def takeConnection(): Future[Connection]
-  protected def freeConnection(conn: Connection): Future[_]
+  protected def withConnection[T](fn: Connection => Future[T]): Future[T]
 
-  override def raw(command: String, resultHandler: Handler[AsyncResult[JsonObject]]): Unit =
-    (for {
-      conn <- takeConnection()
-      json <- conn.sendQuery(command).map(resultToJsonObject)
-    } yield {
-      freeConnection(conn)
-      resultHandler.handle(JFuture.completedFuture(json))
-    }) recover {
-      case ex: Throwable =>
-        logger.info(s"there was a problem with the connection: $ex")
-        resultHandler.handle(JFuture.completedFuture(ex))
+  override def raw(command: String, resultHandler: Handler[AsyncResult[JsonObject]]): Unit = {
+    logger.info(s"raw command -> $command")
+    withConnection { connection =>
+      (for {
+        json <- connection.sendQuery(command).map(resultToJsonObject)
+      } yield {
+        resultHandler.handle(VFuture.succeededFuture(json))
+      }) recover {
+        case ex: Throwable =>
+          logger.info(s"there was a problem with the connection: $ex")
+          resultHandler.handle(VFuture.failedFuture(ex))
+      }
     }
+  }
 
   private def resultToJsonObject(qr: QueryResult): JsonObject = {
     val result = new JsonObject()

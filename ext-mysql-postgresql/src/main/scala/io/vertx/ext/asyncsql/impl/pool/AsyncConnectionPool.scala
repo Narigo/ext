@@ -1,12 +1,13 @@
 package io.vertx.ext.asyncsql.impl.pool
 
 import com.github.mauricio.async.db.{Configuration, Connection}
+import io.netty.channel.EventLoop
 import io.vertx.core.Vertx
 import io.vertx.core.impl.EventLoopContext
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.impl.LoggerFactory
 
-import scala.collection.mutable.Queue
+import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
 
@@ -20,8 +21,8 @@ trait AsyncConnectionPool {
   private implicit val executionContext: ExecutionContext = SimpleExecutionContext(logger)
 
   private var poolSize: Int = 0
-  private val availableConnections: Queue[Connection] = Queue.empty
-  private val waiters: Queue[Promise[Connection]] = Queue.empty
+  private val availableConnections: mutable.Queue[Connection] = mutable.Queue.empty
+  private val waiters: mutable.Queue[Promise[Connection]] = mutable.Queue.empty
 
   def create(): Future[Connection]
 
@@ -109,26 +110,12 @@ trait AsyncConnectionPool {
 }
 
 object AsyncConnectionPool {
-  private val logger: Logger = LoggerFactory.getLogger(classOf[AsyncConnectionPool])
 
-  def apply(vertx: Vertx, dbType: String, maxPoolSize: Int, config: Configuration) = {
-    dbType match {
-      case "postgresql" =>
-        logger.info(s"creating pool with config $config")
-        new PostgreSqlAsyncConnectionPool(vertx,
-          config,
-          vertx.getOrCreateContext.asInstanceOf[EventLoopContext].getEventLoop,
-          maxPoolSize)
-      case "mysql" =>
-        new MySqlAsyncConnectionPool(vertx,
-          config,
-          vertx.getOrCreateContext.asInstanceOf[EventLoopContext].getEventLoop,
-          maxPoolSize)
-      case x => {
-        logger.info(s"not implemented $x")
-        throw new NotImplementedError
-      }
-    }
+  def apply[T <: AsyncConnectionPool](vertx: Vertx, maxPoolSize: Int, config: Configuration, factoryFn: (Vertx, Configuration, EventLoop, Int) => T) = {
+    factoryFn(vertx,
+      config,
+      vertx.getOrCreateContext.asInstanceOf[EventLoopContext].getEventLoop,
+      maxPoolSize)
   }
 
 }

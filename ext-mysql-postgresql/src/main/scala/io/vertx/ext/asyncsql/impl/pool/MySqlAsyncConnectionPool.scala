@@ -9,9 +9,9 @@ import io.vertx.core.logging.impl.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
-class MySqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eventLoop: EventLoop, val maxPoolSize: Int) extends AsyncConnectionPool {
+class MysqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eventLoop: EventLoop, val maxPoolSize: Int) extends AsyncConnectionPool {
 
-  private val logger: Logger = LoggerFactory.getLogger(classOf[MySqlAsyncConnectionPool])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[MysqlAsyncConnectionPool])
 
   private implicit val executionContext: ExecutionContext = SimpleExecutionContext(logger)
 
@@ -21,4 +21,9 @@ class MySqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eventLoo
     executionContext = executionContext
   ).connect
 
+}
+
+object MysqlAsyncConnectionPool {
+  def apply(vertx: Vertx, config: Configuration, eventLoop: EventLoop, maxPoolSize: Int): MysqlAsyncConnectionPool =
+    new MysqlAsyncConnectionPool(vertx, config, eventLoop, maxPoolSize)
 }

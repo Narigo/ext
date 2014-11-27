@@ -9,9 +9,9 @@ import io.vertx.core.logging.impl.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
-class PostgreSqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eventLoop: EventLoop, val maxPoolSize: Int) extends AsyncConnectionPool {
+class PostgresqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eventLoop: EventLoop, val maxPoolSize: Int) extends AsyncConnectionPool {
 
-  private val logger: Logger = LoggerFactory.getLogger(classOf[PostgreSqlAsyncConnectionPool])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[PostgresqlAsyncConnectionPool])
 
   private implicit val executionContext: ExecutionContext = SimpleExecutionContext(logger)
 
@@ -21,4 +21,9 @@ class PostgreSqlAsyncConnectionPool(val vertx: Vertx, config: Configuration, eve
     executionContext = executionContext
   ).connect
 
+}
+
+object PostgresqlAsyncConnectionPool {
+  def apply(vertx: Vertx, config: Configuration, eventLoop: EventLoop, maxPoolSize: Int): PostgresqlAsyncConnectionPool =
+    new PostgresqlAsyncConnectionPool(vertx, config, eventLoop, maxPoolSize)
 }

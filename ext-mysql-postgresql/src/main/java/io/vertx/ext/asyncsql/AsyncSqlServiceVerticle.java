@@ -47,15 +47,21 @@ public class AsyncSqlServiceVerticle extends AbstractVerticle {
 
     // Create the service object
     if (postgresqlConfig != null) {
-      postgresqlService = createServiceFor(postgresqlConfig, PostgresqlService.class,
-        p -> PostgresqlService.create(p.t1, p.t2),
-        simpleEndHandler);
+      postgresqlService =
+        createServiceFor(
+          postgresqlConfig,
+          PostgresqlService.class,
+          p -> PostgresqlService.create(p.t1, p.t2),
+          simpleEndHandler);
     }
 
     if (mysqlConfig != null) {
-      mysqlService = createServiceFor(mysqlConfig, MysqlService.class,
-        p -> MysqlService.create(p.t1, p.t2),
-        simpleEndHandler);
+      mysqlService =
+        createServiceFor(
+          mysqlConfig,
+          MysqlService.class,
+          p -> MysqlService.create(p.t1, p.t2),
+          simpleEndHandler);
     }
 
   }
